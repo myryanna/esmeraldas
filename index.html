@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISTRIBUCIÓN DE CENTROS POBLADOS - Provincia de Esmeraldas</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .geoportal-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* PANEL LATERAL */
+        .sidebar {
+            width: 400px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #334155;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #10b981;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+        
+        .logo p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* CONEXIÓN */
+        .connection-panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .connection-info {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 6px;
+            border-left: 3px solid #10b981;
+        }
+        
+        /* CONTROL DE CAPAS BASE */
+        .base-layers-control {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .base-layers-title {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .base-layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .base-layer-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .base-layer-option:hover {
+            background: rgba(21, 128, 61, 0.1);
+            border-color: #10b981;
+        }
+        
+        .base-layer-option.active {
+            background: rgba(21, 128, 61, 0.2);
+            border-color: #10b981;
+        }
+        
+        .base-layer-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .base-layer-info {
+            flex: 1;
+        }
+        
+        .base-layer-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+        
+        /* CAPAS PREDEFINIDAS */
+        .predefined-layers {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .layer-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .layer-option:hover {
+            background: rgba(21, 128, 61, 0.1);
+            border-color: #10b981;
+        }
+        
+        .layer-option.active {
+            background: rgba(21, 128, 61, 0.2);
+            border-color: #10b981;
+        }
+        
+        .layer-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .layer-info {
+            flex: 1;
+        }
+        
+        .layer-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        
+        .layer-desc {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        
+        .layer-toggle {
+            width: 40px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .layer-toggle.active {
+            background: #10b981;
+        }
+        
+        .layer-toggle::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        
+        .layer-toggle.active::after {
+            left: 22px;
+        }
+        
+        /* BOTONES */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.9);
+            color: #cbd5e1;
+            border: 1px solid #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(51, 65, 85, 0.9);
+        }
+        
+        /* CAPAS CARGADAS */
+        .loaded-layers {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        .layer-item {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .layer-item.active {
+            border-color: #10b981;
+            background: rgba(21, 128, 61, 0.1);
+        }
+        
+        .layer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .layer-info-loaded {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .layer-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .layer-name-loaded {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        
+        .layer-count {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-left: 28px;
+        }
+        
+        .layer-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: rgba(15, 23, 42, 0.7);
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: rgba(21, 128, 61, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        /* MAPA */
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #0f172a;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* HERRAMIENTAS DEL MAPA */
+        .map-tools {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .tool-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        .tool-btn:hover {
+            background: rgba(21, 128, 61, 0.3);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .tool-btn.active {
+            background: rgba(21, 128, 61, 0.4);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .tool-btn.loading {
+            animation: pulseBtn 2s infinite;
+        }
+        
+        @keyframes pulseBtn {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        /* PANEL DE INFORMACIÓN */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 250px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .info-title {
+            color: #10b981;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        /* LEYENDA */
+        .legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.7);
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .legend-name {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        
+        /* CONTROL DE ESCALA */
+        .leaflet-control-scale {
+            background: rgba(30, 41, 59, 0.9) !important;
+            border: 1px solid #475569 !important;
+            border-radius: 4px !important;
+            color: #cbd5e1 !important;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* LOADING */
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(16, 185, 129, 0.2);
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* POPUP PERSONALIZADO */
+        .leaflet-popup-content {
+            min-width: 250px;
+            max-width: 400px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .popup-title {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 15px;
+            margin: -16px -16px 10px -16px;
+            border-radius: 5px 5px 0 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .popup-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px 0;
+        }
+        
+        .data-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        
+        .data-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.85rem;
+            margin-bottom: 3px;
+        }
+        
+        .data-value {
+            color: #1f2937;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+        
+        /* MENSAJES */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 400px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .message-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-left: 4px solid #047857;
+        }
+        
+        .message-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-left: 4px solid #b91c1c;
+        }
+        
+        .message-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-left: 4px solid #b45309;
+        }
+        
+        /* PANEL DE COORDENADAS */
+        .coordinates-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 300px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+        
+        .coordinates-panel.active {
+            display: block;
+        }
+        
+        .coordinates-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .coordinates-title {
+            color: #10b981;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #10b981;
+        }
+        
+        .coordinate-item {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .coordinate-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .coordinate-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            word-break: break-all;
+        }
+        
+        .accuracy-info {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .coordinate-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .action-coord-btn {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .action-coord-btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+        }
+        
+        .action-coord-btn.secondary {
+            background: linear-gradient(135deg, #475569, #334155);
+        }
+        
+        .action-coord-btn.secondary:hover {
+            background: linear-gradient(135deg, #334155, #1e293b);
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .geoportal-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40%;
+            }
+            
+            .map-container {
+                height: 60%;
+            }
+            
+            .logo h1 {
+                font-size: 1.4rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+            
+            .coordinates-panel {
+                min-width: 250px;
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            .coordinate-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="geoportal-container">
+        <!-- PANEL LATERAL -->
+        <div class="sidebar">
+            <!-- LOGO Y TÍTULO -->
+            <div class="logo-section">
+                <div class="logo">
+                    <h1><i class="fas fa-map-marked-alt"></i> DISTRIBUCIÓN DE CENTROS POBLADOS<br>PROVINCIA DE ESMERALDAS</h1>
+                    <p>Sistema de Información Geográfica - Capas Vectoriales</p>
+                </div>
+            </div>
+            
+            <!-- CONEXIÓN -->
+            <div class="connection-panel">
+                <div class="connection-status">
+                    <div class="status-dot"></div>
+                    <span style="font-weight: 600; color: #e2e8f0;" id="statusText">Conectando a Supabase...</span>
+                </div>
+                <div class="connection-info">
+                    <strong>Base de datos:</strong> Capas vectoriales de Esmeraldas<br>
+                    <strong>Estado:</strong> <span id="connectionStatus">Conectando...</span>
+                </div>
+            </div>
+            
+            <!-- CONTROL DE CAPAS BASE -->
+            <div class="base-layers-control">
+                <h3 class="base-layers-title">
+                    <i class="fas fa-globe-americas"></i>
+                    CAPAS BASE DEL MAPA
+                </h3>
+                
+                <div class="base-layers-list">
+                    <!-- OpenStreetMap -->
+                    <div class="base-layer-option active" data-layer="osm" onclick="changeBaseLayer('osm')">
+                        <div class="base-layer-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <div class="base-layer-info">
+                            <div class="base-layer-name">OpenStreetMap</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Satélite -->
+                    <div class="base-layer-option" data-layer="satellite" onclick="changeBaseLayer('satellite')">
+                        <div class="base-layer-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">
+                            <i class="fas fa-satellite"></i>
+                        </div>
+                        <div class="base-layer-info">
+                            <div class="base-layer-name">Imágenes Satelitales</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Topográfico -->
+                    <div class="base-layer-option" data-layer="topo" onclick="changeBaseLayer('topo')">
+                        <div class="base-layer-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">
+                            <i class="fas fa-mountain"></i>
+                        </div>
+                        <div class="base-layer-info">
+                            <div class="base-layer-name">Mapa Topográfico</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Oscuro -->
+                    <div class="base-layer-option" data-layer="dark" onclick="changeBaseLayer('dark')">
+                        <div class="base-layer-icon" style="background: rgba(30, 41, 59, 0.8); color: #cbd5e1;">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <div class="base-layer-info">
+                            <div class="base-layer-name">Modo Oscuro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CAPAS PREDEFINIDAS -->
+            <div class="predefined-layers">
+                <h3 class="section-title">
+                    <i class="fas fa-layer-group"></i>
+                    CAPAS GEOGRÁFICAS DISPONIBLES
+                </h3>
+                
+                <div class="layers-list">
+                    <!-- POBLADOS (CAPA PRINCIPAL) -->
+                    <div class="layer-option active" data-table="POBLADOS_ESMERALDAS" data-color="#10b981" data-icon="🏘️">
+                        <div class="layer-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="layer-info">
+                            <div class="layer-name">CENTROS POBLADOS</div>
+                            <div class="layer-desc">Localidades y asentamientos humanos</div>
+                        </div>
+                        <div class="layer-toggle active" data-table="POBLADOS_ESMERALDAS"></div>
+                    </div>
+                    
+                    <!-- CANTONES -->
+                    <div class="layer-option active" data-table="CANTONES_ESMERALDAS" data-color="#3b82f6" data-icon="🏛️">
+                        <div class="layer-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <div class="layer-info">
+                            <div class="layer-name">LÍMITES CANTONALES</div>
+                            <div class="layer-desc">División política cantonal</div>
+                        </div>
+                        <div class="layer-toggle active" data-table="CANTONES_ESMERALDAS"></div>
+                    </div>
+                    
+                    <!-- VÍAS -->
+                    <div class="layer-option active" data-table="VÍAS_ESMERALDAS" data-color="#f59e0b" data-icon="🛣️">
+                        <div class="layer-icon" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">
+                            <i class="fas fa-road"></i>
+                        </div>
+                        <div class="layer-info">
+                            <div class="layer-name">RED VIAL</div>
+                            <div class="layer-desc">Sistema de transporte terrestre</div>
+                        </div>
+                        <div class="layer-toggle active" data-table="VÍAS_ESMERALDAS"></div>
+                    </div>
+                    
+                    <!-- RIOS -->
+                    <div class="layer-option active" data-table="RIOS_ESMERALDAS" data-color="#06b6d4" data-icon="🌊">
+                        <div class="layer-icon" style="background: rgba(6, 182, 212, 0.2); color: #06b6d4;">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <div class="layer-info">
+                            <div class="layer-name">SISTEMA HIDROGRÁFICO</div>
+                            <div class="layer-desc">Ríos y cursos de agua</div>
+                        </div>
+                        <div class="layer-toggle active" data-table="RIOS_ESMERALDAS"></div>
+                    </div>
+                    
+                    <!-- CURVAS DE NIVEL -->
+                    <div class="layer-option active" data-table="CURVAS_DE_NIVEL_ESMERALDAS" data-color="#8b5cf6" data-icon="⛰️">
+                        <div class="layer-icon" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">
+                            <i class="fas fa-mountain"></i>
+                        </div>
+                        <div class="layer-info">
+                            <div class="layer-name">RELIEF TOPOGRÁFICO</div>
+                            <div class="layer-desc">Curvas de nivel del terreno</div>
+                        </div>
+                        <div class="layer-toggle active" data-table="CURVAS_DE_NIVEL_ESMERALDAS"></div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="loadLayersBtn">
+                        <i class="fas fa-download"></i>
+                        CARGAR TODAS LAS CAPAS
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="clearLayersBtn">
+                        <i class="fas fa-trash"></i>
+                        LIMPIAR MAPA
+                    </button>
+                </div>
+            </div>
+            
+            <!-- CAPAS CARGADAS -->
+            <div class="loaded-layers">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marked-alt"></i>
+                    CAPAS ACTIVAS EN EL MAPA
+                    <span style="font-size: 0.9rem; color: #94a3b8; margin-left: auto;" id="loadedCount">0/5</span>
+                </h3>
+                
+                <div class="layers-list" id="layersList">
+                    <!-- Las capas cargadas se mostrarán aquí -->
+                    <div style="text-align: center; padding: 30px; color: #64748b;">
+                        <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>No hay capas cargadas</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">Haz clic en "CARGAR TODAS LAS CAPAS" para comenzar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAPA -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- HERRAMIENTAS DEL MAPA -->
+            <div class="map-tools">
+                <button class="tool-btn" id="zoomInBtn" title="Acercar">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="tool-btn" id="zoomOutBtn" title="Alejar">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="tool-btn" id="locationBtn" title="Centrar en Esmeraldas">
+                    <i class="fas fa-location-crosshairs"></i>
+                </button>
+                <button class="tool-btn" id="geolocationBtn" title="Mi ubicación actual">
+                    <i class="fas fa-location-arrow"></i>
+                </button>
+                <button class="tool-btn" id="markerBtn" title="Agregar marcador manual">
+                    <i class="fas fa-map-marker-alt"></i>
+                </button>
+                <button class="tool-btn" id="fullscreenBtn" title="Pantalla completa">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="tool-btn" id="legendBtn" title="Mostrar/ocultar leyenda" onclick="toggleLegend()">
+                    <i class="fas fa-palette"></i>
+                </button>
+            </div>
+            
+            <!-- LEYENDA -->
+            <div class="legend" id="legendPanel" style="display: none;">
+                <h3 style="color: #10b981; margin-bottom: 10px; font-size: 1rem;">
+                    <i class="fas fa-palette"></i> LEYENDA DE CAPAS
+                </h3>
+                <div id="legendItems">
+                    <!-- Los elementos de leyenda se agregarán aquí -->
+                </div>
+            </div>
+            
+            <!-- PANEL DE INFORMACIÓN -->
+            <div class="info-panel">
+                <div class="info-title">
+                    <i class="fas fa-chart-bar"></i>
+                    ESTADÍSTICAS DE DISTRIBUCIÓN
+                </div>
+                <div class="info-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Centros Poblados</div>
+                        <div class="stat-value" id="pobladosCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Cantones</div>
+                        <div class="stat-value" id="cantonesCount">7</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Capa Base</div>
+                        <div class="stat-value" id="baseLayerName">OpenStreetMap</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Provincia</div>
+                        <div class="stat-value">Esmeraldas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PANEL DE COORDENADAS -->
+            <div class="coordinates-panel" id="coordinatesPanel">
+                <div class="coordinates-header">
+                    <div class="coordinates-title">
+                        <i class="fas fa-location-arrow"></i>
+                        MI UBICACIÓN ACTUAL
+                    </div>
+                    <button class="close-btn" onclick="closeCoordinatesPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="coordinate-item">
+                    <div class="coordinate-label">Latitud</div>
+                    <div class="coordinate-value" id="coordLat">0.000000°</div>
+                </div>
+                <div class="coordinate-item">
+                    <div class="coordinate-label">Longitud</div>
+                    <div class="coordinate-value" id="coordLng">0.000000°</div>
+                </div>
+                <div class="coordinate-item">
+                    <div class="coordinate-label">Coordenadas (WGS84)</div>
+                    <div class="coordinate-value" id="coordFull">0.000000, 0.000000</div>
+                    <div class="accuracy-info" id="accuracyInfo">
+                        <i class="fas fa-crosshairs"></i>
+                        Precisión: <span id="accuracyValue">-</span> metros
+                    </div>
+                </div>
+                <div class="coordinate-actions">
+                    <button class="action-coord-btn" onclick="copyCoordinates()">
+                        <i class="fas fa-copy"></i>
+                        COPIAR
+                    </button>
+                    <button class="action-coord-btn secondary" onclick="updateMyLocation()">
+                        <i class="fas fa-sync-alt"></i>
+                        ACTUALIZAR
+                    </button>
+                </div>
+            </div>
+            
+            <!-- LOADING -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-spinner"></div>
+                <div style="text-align: center;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 10px;" id="loadingTitle">Cargando distribución poblacional</h3>
+                    <p style="color: #94a3b8;" id="loadingMessage">Conectando con base de datos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // ==============================================
+        // CONFIGURACIÓN
+        // ==============================================
+        const supabaseUrl = 'https://auhwdpfgjujscwwpoinh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHdkcGZnanVqc2N3d3BvaW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NTQ2NjUsImV4cCI6MjA4NDIzMDY2NX0.RJR5AdwG7jERhYmweaDnNK0vOil5R5fSnPkGFbxIOwk';
+        
+        let map = null;
+        let supabaseClient = null;
+        let layers = {};
+        let baseLayers = {};
+        let currentBaseLayer = 'osm';
+        let pobladosCount = 0;
+        let markerMode = false;
+        let currentMarker = null;
+        let geolocationMarker = null;
+        let geolocationWatch = null;
+        let lastLocation = null;
+        
+        // Configuración específica de Esmeraldas
+        const centerEsmeraldas = [0.9631, -79.6516]; // Coordenadas de Esmeraldas
+        const zoomEsmeraldas = 9;
+        
+        // Configuración por capa
+        const layerConfigs = {
+            'POBLADOS_ESMERALDAS': {
+                color: '#10b981',
+                icon: '🏘️',
+                name: 'CENTROS POBLADOS',
+                style: { radius: 8, fillColor: '#10b981', color: '#fff', weight: 2, opacity: 0.8, fillOpacity: 0.8 },
+                description: 'Distribución de asentamientos humanos'
+            },
+            'CANTONES_ESMERALDAS': {
+                color: '#3b82f6',
+                icon: '🏛️',
+                name: 'LÍMITES CANTONALES',
+                style: { color: '#3b82f6', weight: 2, opacity: 0.8, fillOpacity: 0.2 },
+                description: 'División política cantonal'
+            },
+            'VÍAS_ESMERALDAS': {
+                color: '#f59e0b',
+                icon: '🛣️',
+                name: 'RED VIAL',
+                style: { color: '#f59e0b', weight: 3, opacity: 0.8 },
+                description: 'Infraestructura de transporte'
+            },
+            'RIOS_ESMERALDAS': {
+                color: '#06b6d4',
+                icon: '🌊',
+                name: 'SISTEMA HIDROGRÁFICO',
+                style: { color: '#06b6d4', weight: 2, opacity: 0.8 },
+                description: 'Red de drenaje natural'
+            },
+            'CURVAS_DE_NIVEL_ESMERALDAS': {
+                color: '#8b5cf6',
+                icon: '⛰️',
+                name: 'RELIEF TOPOGRÁFICO',
+                style: { color: '#8b5cf6', weight: 1, opacity: 0.6 },
+                description: 'Altimetría del terreno'
+            }
+        };
+        
+        // ==============================================
+        // INICIALIZACIÓN
+        // ==============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar mapa
+            initMap();
+            
+            // Inicializar Supabase
+            initSupabase();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Configurar toggles de capas
+            setupLayerToggles();
+            
+            // Actualizar título de la página
+            document.title = "DISTRIBUCIÓN DE CENTROS POBLADOS - Provincia de Esmeraldas";
+            
+            // Intentar obtener ubicación automáticamente después de 3 segundos
+            setTimeout(() => {
+                checkGeolocationSupport();
+            }, 3000);
+        });
+        
+        // ==============================================
+        // INICIALIZAR MAPA CON CAPAS BASE
+        // ==============================================
+        function initMap() {
+            // Crear mapa centrado en Esmeraldas
+            map = L.map('map').setView(centerEsmeraldas, zoomEsmeraldas);
+            
+            // Definir capas base
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                name: 'OpenStreetMap'
+            });
+            
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, Earthstar Geographics',
+                maxZoom: 19,
+                name: 'Imágenes Satelitales'
+            });
+            
+            const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenTopoMap contributors',
+                maxZoom: 17,
+                name: 'Mapa Topográfico'
+            });
+            
+            const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© CARTO',
+                maxZoom: 19,
+                name: 'Modo Oscuro'
+            });
+            
+            // Guardar referencias a las capas base
+            baseLayers = {
+                'osm': osmLayer,
+                'satellite': satelliteLayer,
+                'topo': topoLayer,
+                'dark': darkLayer
+            };
+            
+            // Agregar OpenStreetMap como capa base predeterminada
+            osmLayer.addTo(map);
+            
+            // NOTA: ELIMINADO EL CONTROL DE CAPAS DE LEAFLET
+            // Ya no agregamos L.control.layers() para evitar la paleta duplicada
+            
+            // Agregar control de escala
+            L.control.scale({
+                imperial: false,
+                metric: true,
+                position: 'bottomright'
+            }).addTo(map);
+            
+            // Eventos para mostrar coordenadas al mover el mouse
+            map.on('mousemove', showMouseCoordinates);
+            map.on('click', handleMapClick);
+            
+            // Actualizar estadísticas
+            map.on('moveend', updateStats);
+            map.on('zoomend', updateStats);
+            
+            // Actualizar estadísticas iniciales
+            updateStats();
+        }
+        
+        // ==============================================
+        // VERIFICAR SOPORTE DE GEOLOCALIZACIÓN
+        // ==============================================
+        function checkGeolocationSupport() {
+            if (!navigator.geolocation) {
+                showMessage('warning', 'Tu navegador no soporta geolocalización. No se puede obtener tu ubicación automática.');
+                return false;
+            }
+            
+            showMessage('info', 'Buscando tu ubicación...');
+            document.getElementById('geolocationBtn').classList.add('loading');
+            
+            // Intentar obtener ubicación
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    handleGeolocationSuccess(position);
+                    document.getElementById('geolocationBtn').classList.remove('loading');
+                },
+                error => {
+                    handleGeolocationError(error);
+                    document.getElementById('geolocationBtn').classList.remove('loading');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+            
+            return true;
+        }
+        
+        // ==============================================
+        // MANEJAR ÉXITO DE GEOLOCALIZACIÓN
+        // ==============================================
+        function handleGeolocationSuccess(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            lastLocation = {
+                lat: lat,
+                lng: lng,
+                accuracy: accuracy,
+                timestamp: new Date()
+            };
+            
+            // Crear marcador de ubicación
+            addGeolocationMarker(lat, lng, accuracy);
+            
+            // Mostrar panel de coordenadas
+            updateCoordinatesPanel(lat, lng, accuracy);
+            document.getElementById('coordinatesPanel').classList.add('active');
+            
+            // Centrar mapa en la ubicación
+            map.setView([lat, lng], 14);
+            
+            // Iniciar seguimiento de ubicación
+            startGeolocationWatch();
+            
+            showMessage('success', `Ubicación encontrada! Precisión: ${Math.round(accuracy)} metros`);
+        }
+        
+        // ==============================================
+        // MANEJAR ERROR DE GEOLOCALIZACIÓN
+        // ==============================================
+        function handleGeolocationError(error) {
+            let message = '';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación en la configuración del navegador.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Información de ubicación no disponible.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Tiempo de espera agotado al buscar ubicación.';
+                    break;
+                default:
+                    message = 'Error desconocido al obtener ubicación.';
+                    break;
+            }
+            
+            showMessage('warning', message);
+            
+            // Mostrar botón para intentar manualmente
+            document.getElementById('geolocationBtn').title = 'Intentar obtener ubicación';
+        }
+        
+        // ==============================================
+        // AGREGAR MARCADOR DE GEOLOCALIZACIÓN
+        // ==============================================
+        function addGeolocationMarker(lat, lng, accuracy) {
+            // Remover marcador anterior si existe
+            if (geolocationMarker) {
+                map.removeLayer(geolocationMarker);
+            }
+            
+            // Crear marcador personalizado para ubicación actual
+            const markerHtml = `
+                <div style="
+                    width: 50px;
+                    height: 50px;
+                    background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.5rem;
+                    position: relative;
+                ">
+                    <i class="fas fa-location-arrow"></i>
+                    <div style="
+                        position: absolute;
+                        top: -5px;
+                        right: -5px;
+                        width: 20px;
+                        height: 20px;
+                        background: #10b981;
+                        border-radius: 50%;
+                        border: 2px solid white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.7rem;
+                    ">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            `;
+            
+            const customIcon = L.divIcon({
+                html: markerHtml,
+                iconSize: [50, 50],
+                iconAnchor: [25, 50],
+                className: 'geolocation-marker'
+            });
+            
+            // Crear marcador
+            geolocationMarker = L.marker([lat, lng], { 
+                icon: customIcon,
+                zIndexOffset: 1000
+            }).addTo(map);
+            
+            // Crear círculo de precisión
+            const accuracyCircle = L.circle([lat, lng], {
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.2,
+                radius: accuracy
+            }).addTo(map);
+            
+            // Popup con información de ubicación
+            const popupContent = createGeolocationPopupContent(lat, lng, accuracy);
+            geolocationMarker.bindPopup(popupContent, {
+                maxWidth: 350
+            }).openPopup();
+            
+            // Guardar referencia al círculo
+            geolocationMarker.accuracyCircle = accuracyCircle;
+        }
+        
+        // ==============================================
+        // CREAR CONTENIDO DEL POPUP DE GEOLOCALIZACIÓN
+        // ==============================================
+        function createGeolocationPopupContent(lat, lng, accuracy) {
+            const timestamp = new Date().toLocaleString('es-EC');
+            
+            return `
+                <div class="popup-title">
+                    <i class="fas fa-location-arrow"></i>
+                    TU UBICACIÓN ACTUAL
+                </div>
+                <div class="popup-content">
+                    <div class="data-row">
+                        <div class="data-label">Latitud</div>
+                        <div class="data-value">${lat.toFixed(6)}°</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Longitud</div>
+                        <div class="data-value">${lng.toFixed(6)}°</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Precisión</div>
+                        <div class="data-value">${Math.round(accuracy)} metros</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Hora de detección</div>
+                        <div class="data-value">${timestamp}</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Dispositivo</div>
+                        <div class="data-value">${isMobile() ? 'Móvil' : 'Computadora'}</div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #dbeafe; border-radius: 4px; font-size: 0.85rem; color: #1e40af;">
+                        <i class="fas fa-info-circle"></i> Esta es tu ubicación detectada automáticamente
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ==============================================
+        // INICIAR SEGUIMIENTO DE GEOLOCALIZACIÓN
+        // ==============================================
+        function startGeolocationWatch() {
+            if (geolocationWatch) {
+                navigator.geolocation.clearWatch(geolocationWatch);
+            }
+            
+            geolocationWatch = navigator.geolocation.watchPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Actualizar marcador si existe
+                    if (geolocationMarker) {
+                        geolocationMarker.setLatLng([lat, lng]);
+                        
+                        // Actualizar círculo de precisión
+                        if (geolocationMarker.accuracyCircle) {
+                            geolocationMarker.accuracyCircle.setLatLng([lat, lng]);
+                            geolocationMarker.accuracyCircle.setRadius(accuracy);
+                        }
+                        
+                        // Actualizar panel de coordenadas si está abierto
+                        if (document.getElementById('coordinatesPanel').classList.contains('active')) {
+                            updateCoordinatesPanel(lat, lng, accuracy);
+                        }
+                    }
+                },
+                error => {
+                    console.error('Error en seguimiento de ubicación:', error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 30000,
+                    timeout: 27000
+                }
+            );
+        }
+        
+        // ==============================================
+        // DETENER SEGUIMIENTO DE GEOLOCALIZACIÓN
+        // ==============================================
+        function stopGeolocationWatch() {
+            if (geolocationWatch) {
+                navigator.geolocation.clearWatch(geolocationWatch);
+                geolocationWatch = null;
+            }
+        }
+        
+        // ==============================================
+        // ACTUALIZAR MI UBICACIÓN
+        // ==============================================
+        window.updateMyLocation = function() {
+            if (!navigator.geolocation) {
+                showMessage('warning', 'Geolocalización no soportada');
+                return;
+            }
+            
+            showMessage('info', 'Actualizando ubicación...');
+            document.getElementById('geolocationBtn').classList.add('loading');
+            
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    handleGeolocationSuccess(position);
+                    document.getElementById('geolocationBtn').classList.remove('loading');
+                    showMessage('success', 'Ubicación actualizada');
+                },
+                error => {
+                    handleGeolocationError(error);
+                    document.getElementById('geolocationBtn').classList.remove('loading');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        };
+        
+        // ==============================================
+        // DETECTAR SI ES DISPOSITIVO MÓVIL
+        // ==============================================
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // ==============================================
+        // MOSTRAR COORDENADAS DEL MOUSE
+        // ==============================================
+        function showMouseCoordinates(e) {
+            // Opcional: Mostrar coordenadas en algún lugar de la interfaz
+        }
+        
+        // ==============================================
+        // MANEJAR CLIC EN EL MAPA
+        // ==============================================
+        function handleMapClick(e) {
+            if (markerMode) {
+                addManualMarkerAtLocation(e.latlng);
+            }
+        }
+        
+        // ==============================================
+        // AGREGAR MARCADOR MANUAL
+        // ==============================================
+        function addManualMarkerAtLocation(latlng) {
+            // Remover marcador anterior si existe
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            
+            // Crear marcador personalizado
+            const markerHtml = `
+                <div style="
+                    width: 40px;
+                    height: 40px;
+                    background: linear-gradient(135deg, #ef4444, #dc2626);
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.2rem;
+                ">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+            `;
+            
+            const customIcon = L.divIcon({
+                html: markerHtml,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                className: 'manual-marker'
+            });
+            
+            // Crear marcador
+            currentMarker = L.marker(latlng, { 
+                icon: customIcon,
+                draggable: true 
+            }).addTo(map);
+            
+            // Popup con información de ubicación
+            const popupContent = createManualMarkerPopupContent(latlng);
+            currentMarker.bindPopup(popupContent, {
+                maxWidth: 300
+            }).openPopup();
+            
+            // Evento al arrastrar el marcador
+            currentMarker.on('dragend', function(e) {
+                const marker = e.target;
+                const position = marker.getLatLng();
+                
+                // Actualizar popup
+                const newPopupContent = createManualMarkerPopupContent(position);
+                marker.setPopupContent(newPopupContent);
+                
+                showMessage('info', `Marcador movido a: ${position.lat.toFixed(6)}°, ${position.lng.toFixed(6)}°`);
+            });
+            
+            showMessage('success', `Marcador agregado en: ${latlng.lat.toFixed(6)}°, ${latlng.lng.toFixed(6)}°`);
+        }
+        
+        // ==============================================
+        // CREAR CONTENIDO DEL POPUP DE MARCADOR MANUAL
+        // ==============================================
+        function createManualMarkerPopupContent(latlng) {
+            return `
+                <div class="popup-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    UBICACIÓN MARCADA
+                </div>
+                <div class="popup-content">
+                    <div class="data-row">
+                        <div class="data-label">Latitud</div>
+                        <div class="data-value">${latlng.lat.toFixed(6)}°</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Longitud</div>
+                        <div class="data-value">${latlng.lng.toFixed(6)}°</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Coordenadas WGS84</div>
+                        <div class="data-value">${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">Provincia</div>
+                        <div class="data-value"><strong>Esmeraldas</strong></div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85rem; color: #4b5563;">
+                        <i class="fas fa-info-circle"></i> Marcador manual - arrastra para mover
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ==============================================
+        // ACTUALIZAR PANEL DE COORDENADAS
+        // ==============================================
+        function updateCoordinatesPanel(lat, lng, accuracy = null) {
+            document.getElementById('coordLat').textContent = `${lat.toFixed(6)}°`;
+            document.getElementById('coordLng').textContent = `${lng.toFixed(6)}°`;
+            document.getElementById('coordFull').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            
+            if (accuracy !== null) {
+                document.getElementById('accuracyValue').textContent = Math.round(accuracy);
+                document.getElementById('accuracyInfo').style.display = 'flex';
+            } else {
+                document.getElementById('accuracyInfo').style.display = 'none';
+            }
+        }
+        
+        // ==============================================
+        // COPIAR COORDENADAS AL PORTAPAPELES
+        // ==============================================
+        window.copyCoordinates = function() {
+            const coords = document.getElementById('coordFull').textContent;
+            
+            navigator.clipboard.writeText(coords).then(() => {
+                showMessage('success', `Coordenadas copiadas: ${coords}`);
+                
+                // Feedback visual en el botón
+                const copyBtn = document.querySelector('.action-coord-btn:first-child');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIADO!';
+                copyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                }, 2000);
+                
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                showMessage('error', 'Error al copiar coordenadas');
+            });
+        };
+        
+        // ==============================================
+        // CERRAR PANEL DE COORDENADAS
+        // ==============================================
+        window.closeCoordinatesPanel = function() {
+            document.getElementById('coordinatesPanel').classList.remove('active');
+            
+            // Remover marcador manual si existe
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                currentMarker = null;
+            }
+            
+            // Desactivar modo marcador manual
+            markerMode = false;
+            document.getElementById('markerBtn').classList.remove('active');
+            
+            // Detener seguimiento de ubicación
+            stopGeolocationWatch();
+            
+            showMessage('info', 'Ubicación oculta');
+        };
+        
+        // ==============================================
+        // TOGGLE MODO MARCADOR MANUAL
+        // ==============================================
+        window.toggleMarkerMode = function() {
+            markerMode = !markerMode;
+            const markerBtn = document.getElementById('markerBtn');
+            
+            if (markerMode) {
+                markerBtn.classList.add('active');
+                showMessage('success', 'Modo marcador manual activado. Haz clic en el mapa para agregar un marcador.');
+                
+                // Cerrar panel de coordenadas automáticas si estaba abierto
+                document.getElementById('coordinatesPanel').classList.remove('active');
+                
+                // Remover marcador manual anterior si existe
+                if (currentMarker) {
+                    map.removeLayer(currentMarker);
+                    currentMarker = null;
+                }
+                
+            } else {
+                markerBtn.classList.remove('active');
+                showMessage('info', 'Modo marcador manual desactivado');
+            }
+        };
+        
+        // ==============================================
+        // CAMBIAR CAPA BASE
+        // ==============================================
+        window.changeBaseLayer = function(layerId) {
+            // Actualizar clase activa en los botones
+            document.querySelectorAll('.base-layer-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`.base-layer-option[data-layer="${layerId}"]`).classList.add('active');
+            
+            // Cambiar capa base en el mapa
+            if (baseLayers[currentBaseLayer]) {
+                map.removeLayer(baseLayers[currentBaseLayer]);
+            }
+            
+            if (baseLayers[layerId]) {
+                map.addLayer(baseLayers[layerId]);
+                currentBaseLayer = layerId;
+                
+                // Actualizar nombre en panel de información
+                const layerNames = {
+                    'osm': 'OpenStreetMap',
+                    'satellite': 'Satélite',
+                    'topo': 'Topográfico',
+                    'dark': 'Oscuro'
+                };
+                document.getElementById('baseLayerName').textContent = layerNames[layerId];
+                
+                showMessage('info', `Capa base cambiada a: ${layerNames[layerId]}`);
+            }
+        };
+        
+        // ==============================================
+        // INICIALIZAR SUPABASE
+        // ==============================================
+        function initSupabase() {
+            try {
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                
+                // Actualizar estado de conexión
+                document.getElementById('statusText').textContent = 'Conectado a base de datos';
+                document.getElementById('connectionStatus').textContent = 'Conectado ✓';
+                document.getElementById('connectionStatus').style.color = '#10b981';
+                
+                showMessage('success', 'Sistema de Distribución Poblacional - Conectado');
+                
+            } catch (error) {
+                console.error('Error al conectar con Supabase:', error);
+                document.getElementById('statusText').textContent = 'Error de conexión';
+                document.getElementById('connectionStatus').textContent = 'Error ✗';
+                document.getElementById('connectionStatus').style.color = '#ef4444';
+                
+                showMessage('error', 'Error al conectar con la base de datos: ' + error.message);
+            }
+        }
+        
+        // ==============================================
+        // CARGAR TODAS LAS CAPAS SELECCIONADAS
+        // ==============================================
+        async function loadSelectedLayers() {
+            // Obtener capas seleccionadas
+            const selectedLayers = [];
+            document.querySelectorAll('.layer-option.active').forEach(option => {
+                const tableName = option.dataset.table;
+                const config = layerConfigs[tableName];
+                if (config) {
+                    selectedLayers.push({
+                        table: tableName,
+                        config: config
+                    });
+                }
+            });
+            
+            if (selectedLayers.length === 0) {
+                showMessage('error', 'Por favor, selecciona al menos una capa');
+                return;
+            }
+            
+            showLoading(`Cargando distribución poblacional de Esmeraldas...`);
+            pobladosCount = 0;
+            
+            // Cargar cada capa
+            for (let i = 0; i < selectedLayers.length; i++) {
+                const layer = selectedLayers[i];
+                const progress = Math.round(((i + 1) / selectedLayers.length) * 100);
+                
+                document.getElementById('loadingMessage').textContent = 
+                    `Cargando ${layer.config.name.toLowerCase()}... (${progress}%)`;
+                
+                await loadLayerData(layer.table, layer.config, i);
+            }
+            
+            hideLoading();
+            showMessage('success', `Sistema de distribución cargado: ${pobladosCount} centros poblados`);
+            updateStats();
+            updateLegend();
+            
+            // Ajustar vista del mapa si hay capas cargadas
+            if (Object.keys(layers).length > 0) {
+                fitMapToLayers();
+            }
+        }
+        
+        // ==============================================
+        // CARGAR DATOS DE UNA CAPA ESPECÍFICA
+        // ==============================================
+        async function loadLayerData(tableName, config, index) {
+            try {
+                // Consultar datos de la tabla
+                const { data, error } = await supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .limit(1000); // Aumentado para centros poblados
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (!data || data.length === 0) {
+                    console.warn(`La capa ${tableName} está vacía`);
+                    return;
+                }
+                
+                // Crear capa en el mapa
+                const layerId = `layer-${tableName}-${Date.now()}`;
+                const layerGroup = L.layerGroup();
+                
+                let elementCount = 0;
+                
+                // Procesar cada elemento según su tipo
+                data.forEach((item, idx) => {
+                    try {
+                        let layerElement = null;
+                        
+                        // Crear elemento según su geometría
+                        if (item.geom && item.geom.coordinates) {
+                            const geomType = item.geom.type;
+                            
+                            switch(geomType) {
+                                case 'Polygon':
+                                case 'MultiPolygon':
+                                    // Para polígonos (CANTONES)
+                                    layerElement = L.geoJSON(item.geom, {
+                                        style: config.style
+                                    });
+                                    break;
+                                    
+                                case 'LineString':
+                                case 'MultiLineString':
+                                    // Para líneas (VÍAS, RIOS, CURVAS)
+                                    layerElement = L.geoJSON(item.geom, {
+                                        style: config.style
+                                    });
+                                    break;
+                                    
+                                case 'Point':
+                                    // Para puntos (POBLADOS) - ENFATIZAR
+                                    const coords = item.geom.coordinates;
+                                    const pobladoStyle = tableName === 'POBLADOS_ESMERALDAS' 
+                                        ? { radius: 10, fillColor: '#10b981', color: '#fff', weight: 3, opacity: 1, fillOpacity: 0.9 }
+                                        : config.style;
+                                    
+                                    layerElement = L.circleMarker([coords[1], coords[0]], pobladoStyle);
+                                    
+                                    // Contar centros poblados
+                                    if (tableName === 'POBLADOS_ESMERALDAS') {
+                                        pobladosCount++;
+                                    }
+                                    break;
+                                    
+                                default:
+                                    console.warn(`Tipo de geometría no soportado: ${geomType}`);
+                                    return;
+                            }
+                            
+                            if (layerElement) {
+                                // Crear popup con información
+                                let popupContent = `<div class="popup-title">${config.name} #${idx + 1}</div>`;
+                                popupContent += `<div class="popup-content">`;
+                                
+                                // Agregar todos los campos (excepto geom)
+                                Object.keys(item).forEach(key => {
+                                    if (key !== 'geom' && key !== 'id') {
+                                        let value = item[key];
+                                        if (value === null || value === undefined) value = 'N/D';
+                                        if (typeof value === 'object') value = JSON.stringify(value);
+                                        
+                                        // Formatear nombres de campos
+                                        const fieldName = key.replace(/_/g, ' ');
+                                        let displayValue = value;
+                                        
+                                        // Formatear valores especiales para POBLADOS
+                                        if (tableName === 'POBLADOS_ESMERALDAS') {
+                                            if (key === 'NOMBRE') {
+                                                popupContent = `<div class="popup-title">${value}</div><div class="popup-content">`;
+                                                return;
+                                            }
+                                            if (key === 'PROVINCIA') {
+                                                displayValue = '<strong>' + value + '</strong>';
+                                            }
+                                            if (key === 'X' || key === 'Y') {
+                                                displayValue = parseFloat(value).toFixed(6) + '°';
+                                            }
+                                        }
+                                        
+                                        popupContent += `
+                                            <div class="data-row">
+                                                <div class="data-label">${fieldName}</div>
+                                                <div class="data-value">${displayValue}</div>
+                                            </div>
+                                        `;
+                                    }
+                                });
+                                
+                                popupContent += `</div>`;
+                                
+                                layerElement.bindPopup(popupContent);
+                                layerElement.addTo(layerGroup);
+                                elementCount++;
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Error procesando elemento ${idx} de ${tableName}:`, e);
+                    }
+                });
+                
+                // Agregar al mapa
+                layerGroup.addTo(map);
+                
+                // Guardar información de la capa
+                layers[layerId] = {
+                    id: layerId,
+                    table: tableName,
+                    name: config.name,
+                    layer: layerGroup,
+                    color: config.color,
+                    icon: config.icon,
+                    count: elementCount,
+                    config: config,
+                    visible: true
+                };
+                
+                // Actualizar lista de capas
+                updateLayersList();
+                
+                console.log(`Capa "${config.name}" cargada: ${elementCount} elementos`);
+                
+            } catch (error) {
+                console.error(`Error al cargar la capa ${tableName}:`, error);
+                showMessage('error', `Error al cargar "${config.name}": ${error.message}`);
+            }
+        }
+        
+        // ==============================================
+        // AJUSTAR VISTA DEL MAPA A LAS CAPAS CARGADAS
+        // ==============================================
+        function fitMapToLayers() {
+            const boundsArray = [];
+            
+            Object.values(layers).forEach(layer => {
+                if (layer.visible && layer.count > 0) {
+                    const layerBounds = layer.layer.getBounds();
+                    if (layerBounds.isValid()) {
+                        boundsArray.push(layerBounds);
+                    }
+                }
+            });
+            
+            if (boundsArray.length > 0) {
+                // Crear bounds que incluya todas las capas
+                const combinedBounds = L.latLngBounds(boundsArray);
+                map.fitBounds(combinedBounds.pad(0.1));
+            }
+        }
+        
+        // ==============================================
+        // ACTUALIZAR LISTA DE CAPAS CARGADAS
+        // ==============================================
+        function updateLayersList() {
+            const container = document.getElementById('layersList');
+            const layersArray = Object.values(layers);
+            
+            if (layersArray.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #64748b;">
+                        <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>No hay capas cargadas</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">Haz clic en "CARGAR TODAS LAS CAPAS" para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            layersArray.forEach(layer => {
+                // Destacar capa de centros poblados
+                const isPoblados = layer.table === 'POBLADOS_ESMERALDAS';
+                const highlightClass = isPoblados ? 'active' : '';
+                
+                html += `
+                    <div class="layer-item ${layer.visible ? 'active' : ''} ${highlightClass}">
+                        <div class="layer-header">
+                            <div class="layer-info-loaded">
+                                <div class="layer-color" style="background-color: ${layer.color}; ${isPoblados ? 'border: 2px solid #fff;' : ''}"></div>
+                                <div class="layer-name-loaded">${layer.name} ${isPoblados ? '🌟' : ''}</div>
+                            </div>
+                            <div class="layer-actions">
+                                <button class="action-btn" onclick="toggleLayer('${layer.id}')" title="${layer.visible ? 'Ocultar' : 'Mostrar'}">
+                                    <i class="fas fa-eye${layer.visible ? '' : '-slash'}"></i>
+                                </button>
+                                <button class="action-btn" onclick="zoomToLayer('${layer.id}')" title="Centrar en esta capa">
+                                    <i class="fas fa-search-location"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layer-count">
+                            ${layer.count} ${isPoblados ? 'centros poblados' : 'elementos'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('loadedCount').textContent = `${layersArray.length}/5`;
+        }
+        
+        // ==============================================
+        // FUNCIONES PARA MANIPULAR CAPAS
+        // ==============================================
+        window.toggleLayer = function(layerId) {
+            const layer = layers[layerId];
+            if (!layer) return;
+            
+            layer.visible = !layer.visible;
+            
+            if (layer.visible) {
+                map.addLayer(layer.layer);
+            } else {
+                map.removeLayer(layer.layer);
+            }
+            
+            updateLayersList();
+            updateStats();
+            updateLegend();
+        };
+        
+        window.zoomToLayer = function(layerId) {
+            const layer = layers[layerId];
+            if (!layer || layer.count === 0) return;
+            
+            const bounds = layer.layer.getBounds();
+            if (bounds.isValid()) {
+                map.fitBounds(bounds.pad(0.1));
+                showMessage('info', `Centrado en ${layer.name.toLowerCase()}`);
+            }
+        };
+        
+        // ==============================================
+        // LIMPIAR TODAS LAS CAPAS
+        // ==============================================
+        function clearAllLayers() {
+            if (Object.keys(layers).length === 0) {
+                showMessage('info', 'No hay capas para limpiar');
+                return;
+            }
+            
+            Object.values(layers).forEach(layer => {
+                map.removeLayer(layer.layer);
+            });
+            
+            layers = {};
+            pobladosCount = 0;
+            updateLayersList();
+            updateStats();
+            updateLegend();
+            
+            showMessage('success', 'Mapa limpiado. Listo para nueva consulta.');
+        }
+        
+        // ==============================================
+        // ACTUALIZAR ESTADÍSTICAS
+        // ==============================================
+        function updateStats() {
+            const visibleLayers = Object.values(layers).filter(layer => layer.visible).length;
+            
+            // Actualizar conteo de centros poblados
+            const pobladosLayer = Object.values(layers).find(l => l.table === 'POBLADOS_ESMERALDAS');
+            const currentPobladosCount = pobladosLayer ? pobladosLayer.count : 0;
+            
+            document.getElementById('pobladosCount').textContent = currentPobladosCount;
+        }
+        
+        // ==============================================
+        // ACTUALIZAR LEYENDA
+        // ==============================================
+        function updateLegend() {
+            const legendPanel = document.getElementById('legendPanel');
+            const legendItems = document.getElementById('legendItems');
+            
+            const visibleLayers = Object.values(layers).filter(layer => layer.visible);
+            
+            if (visibleLayers.length === 0) {
+                legendPanel.style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            visibleLayers.forEach(layer => {
+                const isPoblados = layer.table === 'POBLADOS_ESMERALDAS';
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${layer.color}; ${isPoblados ? 'border: 2px solid #fff;' : ''}"></div>
+                        <span class="legend-name">${layer.name} ${isPoblados ? '🌟' : ''}</span>
+                    </div>
+                `;
+            });
+            
+            legendItems.innerHTML = html;
+            legendPanel.style.display = 'block';
+        }
+        
+        // ==============================================
+        // MOSTRAR/OCULTAR LEYENDA
+        // ==============================================
+        function toggleLegend() {
+            const legendPanel = document.getElementById('legendPanel');
+            if (legendPanel.style.display === 'none') {
+                legendPanel.style.display = 'block';
+                showMessage('info', 'Leyenda de distribución mostrada');
+            } else {
+                legendPanel.style.display = 'none';
+                showMessage('info', 'Leyenda oculta');
+            }
+        }
+        
+        // ==============================================
+        // CONFIGURAR TOGGLES DE CAPAS
+        // ==============================================
+        function setupLayerToggles() {
+            document.querySelectorAll('.layer-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    
+                    const tableName = this.dataset.table;
+                    const layerOption = this.closest('.layer-option');
+                    layerOption.classList.toggle('active');
+                });
+            });
+            
+            document.querySelectorAll('.layer-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    if (!e.target.closest('.layer-toggle')) {
+                        const toggle = this.querySelector('.layer-toggle');
+                        toggle.classList.toggle('active');
+                        this.classList.toggle('active');
+                    }
+                });
+            });
+        }
+        
+        // ==============================================
+        // CONFIGURAR EVENT LISTENERS
+        // ==============================================
+        function setupEventListeners() {
+            // Botón de cargar capas
+            document.getElementById('loadLayersBtn').addEventListener('click', loadSelectedLayers);
+            
+            // Botón de limpiar capas
+            document.getElementById('clearLayersBtn').addEventListener('click', clearAllLayers);
+            
+            // Herramientas del mapa
+            document.getElementById('zoomInBtn').addEventListener('click', () => map.zoomIn());
+            document.getElementById('zoomOutBtn').addEventListener('click', () => map.zoomOut());
+            document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+            document.getElementById('markerBtn').addEventListener('click', toggleMarkerMode);
+            document.getElementById('geolocationBtn').addEventListener('click', updateMyLocation);
+            
+            // Ubicación del usuario
+            document.getElementById('locationBtn').addEventListener('click', function() {
+                map.setView(centerEsmeraldas, zoomEsmeraldas);
+                showMessage('info', 'Centrado en Provincia de Esmeraldas');
+            });
+        }
+        
+        // ==============================================
+        // FUNCIONES AUXILIARES
+        // ==============================================
+        function showLoading(message) {
+            document.getElementById('loadingTitle').textContent = 'Analizando distribución poblacional';
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        function showMessage(type, text) {
+            // Eliminar mensaje anterior
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // Crear nuevo mensaje
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${text}</span>
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                }
+                showMessage('info', 'Pantalla completa activada');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                showMessage('info', 'Pantalla completa desactivada');
+            }
+        }
+        
+        // Cargar capas automáticamente después de la conexión
+        setTimeout(() => {
+            // Cargar todas las capas automáticamente después de 2 segundos
+            if (supabaseClient) {
+                setTimeout(() => {
+                    loadSelectedLayers();
+                }, 2000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
